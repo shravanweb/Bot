@@ -5,13 +5,16 @@
   "type": "module",
   "description": "A scheduled attendance reminder assistant using Playwright and node-cron.",
   "scripts": {
-    "start": "node src/app.js"
+    "start": "node src/app.js",
+    "test": "node --test"
   },
   "dependencies": {
+    "@sparticuz/chromium": "^141.0.0",
     "@tesseract.js-data/eng": "^1.0.0",
     "dotenv": "^16.4.7",
     "node-cron": "^3.0.3",
-    "playwright": "^1.51.0",
+    "playwright": "^1.56.1",
+    "playwright-core": "^1.56.1",
     "tesseract.js": "^7.0.0"
   }
 }

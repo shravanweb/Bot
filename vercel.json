@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/attendance",
+      "schedule": "* * * * 1-5"
+    }
+  ],
+  "functions": {
+    "api/attendance.js": {
+      "maxDuration": 300,
+      "includeFiles": "node_modules/{@sparticuz/chromium/bin/**,@tesseract.js-data/eng/4.0.0/**,tesseract.js-core/**}"
+    }
+  }
+}
