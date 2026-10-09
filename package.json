@@ -1,0 +1,17 @@
+{
+  "name": "attendance-bot-assistant",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A scheduled attendance reminder assistant using Playwright and node-cron.",
+  "scripts": {
+    "start": "node src/app.js"
+  },
+  "dependencies": {
+    "@tesseract.js-data/eng": "^1.0.0",
+    "dotenv": "^16.4.7",
+    "node-cron": "^3.0.3",
+    "playwright": "^1.51.0",
+    "tesseract.js": "^7.0.0"
+  }
+}
