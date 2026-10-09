@@ -1,0 +1,22 @@
+services:
+  - type: worker
+    name: attendance-bot
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: starter
+    envVars:
+      - key: ATTENDANCE_URL
+        sync: false
+      - key: ATTENDANCE_EMAIL
+        sync: false
+      - key: ATTENDANCE_PASSWORD
+        sync: false
+      - key: PUNCH_IN_TIME
+        value: "09:00"
+      - key: PUNCH_OUT_TIME
+        value: "18:00"
+      - key: TIMEZONE
+        value: Asia/Kolkata
+      - key: HEADLESS
+        value: "true"

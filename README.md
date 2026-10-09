@@ -5,10 +5,10 @@ A starter Node.js project that opens your company attendance website at schedule
 ## What it does
 
 - Schedules weekday Punch In and Punch Out reminders.
-- Opens the attendance website in Chromium (visible locally and headlessly in hosted containers).
+- Opens the attendance website in Chromium (visible locally and headlessly on Render).
 - Signs in using credentials stored in the local `.env` file.
 - Uses screen-coordinate interaction because the attendance controls are not reliably accessible to Playwright.
-- Runs Chromium headlessly when `HEADLESS=true`, as required by hosted containers.
+- Runs Chromium headlessly when `HEADLESS=true`, as configured by the Render worker.
 - Automatically submits Punch In only when local OCR clearly confirms today's Punch In form and does not show that today's Punch In is already recorded.
 - At the scheduled Punch Out time, uses local English OCR to check that today's Punch In and the Punch Out form are visible; it skips if Punch Out is already recorded or the page state is unclear.
 - Submits Punch In or Punch Out only after the corresponding screen-state checks, then looks for confirmation.
@@ -55,17 +55,17 @@ For local runs, keep the terminal and computer running. At the scheduled times, 
 
 Screen coordinates are based on a 1446x741 browser viewport. OCR runs locally using the bundled English model; screenshots are not sent to an OCR service.
 
-## Deploy on Vercel Pro
+## Deploy on Render
 
-Vercel runs this project as a scheduled function rather than a continuously running Node.js process. The Pro Cron invokes the attendance function every minute on weekdays; the function checks the configured timezone and only starts browser automation when a punch time matches. Vercel Cron uses UTC, so this runtime timezone check avoids hardcoding UTC offsets in the schedule. The every-minute Cron requires a Vercel Pro plan and invokes a function about 31,680 times in a typical 30-day month with 22 weekdays.
+Render runs this app as a continuously running Background Worker, so its in-process weekday scheduler remains active while your computer is off. The included `render.yaml` describes a paid `starter` worker; Free web services sleep when idle and are not a substitute for an always-on worker.
 
-1. Push the project to the GitHub repository connected to Vercel. Do not commit `.env`.
-2. In Vercel, select the project and add `ATTENDANCE_URL`, `ATTENDANCE_EMAIL`, `ATTENDANCE_PASSWORD`, `PUNCH_IN_TIME`, `PUNCH_OUT_TIME`, and `TIMEZONE` under **Settings > Environment Variables** for Production.
-3. Generate a long random secret and add it as `CRON_SECRET` in Vercel Production Environment Variables. Vercel automatically authenticates Cron requests using this stored secret.
-4. Confirm the Vercel project is on Pro, then redeploy the latest production deployment. `vercel.json` registers a weekday, every-minute Cron; do not configure the same Cron separately in the dashboard.
-5. Visit the root deployment URL to see the status page. Check **Functions > Logs** for `/api/attendance` and confirm the first scheduled runs and attendance records.
+1. Push this project to GitHub. Do not commit `.env`.
+2. In the Render Dashboard, choose **New > Blueprint**, connect this repository, and select `render.yaml`. Render creates the `attendance-bot` Background Worker using the Dockerfile.
+3. When prompted, enter `ATTENDANCE_URL`, `ATTENDANCE_EMAIL`, and `ATTENDANCE_PASSWORD` as secret values. The blueprint sets `PUNCH_IN_TIME=09:00`, `PUNCH_OUT_TIME=18:00`, `TIMEZONE=Asia/Kolkata`, and `HEADLESS=true`; adjust times in `render.yaml` or the service environment before deploying if needed.
+4. Choose a paid worker instance and keep one instance running. Do not also enable an old Vercel Cron deployment for these punch actions.
+5. Check the Render worker logs for both scheduled times and verify attendance after each first run.
 
-The Cron endpoint rejects requests without the secret. Vercel invokes it with GET requests. If the attendance site requires CAPTCHA, MFA, GPS, or other manual verification, a headless function cannot complete that step. This automation relies on fixed screen coordinates and OCR; monitor the first runs and verify the attendance record yourself. If a run takes longer than a minute, the next Cron invocation can overlap; OCR guards against already-recorded Punch In/Out but cannot guarantee exactly-once processing for external side effects.
+The worker opens a headless browser, so there is no visible browser window to complete a challenge. If the attendance site requires CAPTCHA, MFA, GPS, or other manual verification, the worker cannot complete that step. This automation relies on fixed screen coordinates and OCR; monitor the first runs and verify the attendance record yourself.
 
 ## Schedule
 
@@ -83,5 +83,5 @@ The included schedule runs Monday through Friday. To change the times, edit `.en
 
 - `ATTENDANCE_URL`: must be the real website URL and start with `https://`.
 - If Chromium is missing, run `npx playwright install chromium`.
-- If reminders do not fire, confirm the Vercel project is on Pro, the production deployment includes `vercel.json`, all required Production Environment Variables are set, and the Cron/function logs show invocations. Verify the attendance site does not require manual verification.
+- If reminders do not fire, confirm the Render Background Worker is running, all required service environment variables are set, and the logs show both schedules with the expected timezone. A stopped worker cannot run scheduled jobs.
 - If the website requires additional verification, complete it manually according to company policy.

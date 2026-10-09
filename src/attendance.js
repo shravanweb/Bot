@@ -1,5 +1,4 @@
-import { chromium as playwrightChromium } from "playwright-core";
-import serverlessChromium from "@sparticuz/chromium";
+import { chromium } from "playwright";
 import { createWorker } from "tesseract.js";
 import englishOcrData from "@tesseract.js-data/eng";
 
@@ -80,17 +79,7 @@ export async function runAttendanceAction(action) {
 
   try {
     console.log(`[${new Date().toISOString()}] ${action} reminder`);
-    if (process.env.VERCEL) {
-      browser = await playwrightChromium.launch({
-        args: serverlessChromium.args,
-        executablePath: await serverlessChromium.executablePath(),
-        headless: true
-      });
-    } else {
-      browser = await playwrightChromium.launch({
-        headless: process.env.HEADLESS === "true"
-      });
-    }
+    browser = await chromium.launch({ headless: process.env.HEADLESS === "true" });
 
     const page = await browser.newPage({ viewport });
     ocrWorker = await createWorker("eng", 1, {
